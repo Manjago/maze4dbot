@@ -4,5 +4,5 @@ import java.time.Instant
 
 interface LeventBus {
     fun push(message: LeventMessage, due: Instant = Instant.now())
-    fun pull(): LeventMessage?
+    fun pull(from: Instant = Instant.now()): LeventMessage?
 }
