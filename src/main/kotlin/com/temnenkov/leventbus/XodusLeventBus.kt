@@ -71,13 +71,6 @@ class XodusLeventBus(
         }
     }
 
-    fun dropAll() {
-        env.executeInTransaction { txn ->
-            env.removeStore(queueStoreName(), txn)
-            env.removeStore(indexStoreName(), txn)
-        }
-    }
-
     private fun indexStoreName() = properties.getProperty("queueMainIndex", "LeventbusStoreMainIndex")
 
     private fun queueStoreName() = properties.getProperty("queue", "LeventbusStore")
