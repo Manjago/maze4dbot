@@ -12,7 +12,7 @@
     <name>maze4dbot</name>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <kotlin.version>1.7.0</kotlin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
@@ -116,10 +116,11 @@
                 </configuration>
             </plugin>
 
+<!--
             <plugin>
                 <groupId>com.github.gantsign.maven</groupId>
                 <artifactId>ktlint-maven-plugin</artifactId>
-                <version>1.11.2</version>
+                <version>1.14.0</version>
                 <executions>
                     <execution>
                         <id>format-and-check</id>
@@ -131,6 +132,7 @@
                 </executions>
             </plugin>
 
+-->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
