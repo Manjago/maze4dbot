@@ -1,6 +1,7 @@
 package com.temnenkov.leventbus
 
 import jetbrains.exodus.ArrayByteIterable
+import jetbrains.exodus.ByteIterable
 import jetbrains.exodus.bindings.LongBinding
 import jetbrains.exodus.bindings.StringBinding
 import jetbrains.exodus.env.Environment
@@ -41,10 +42,9 @@ class XodusLeventBus(
 
             while (cursor.next) {
 
-                val key = cursor.key
-                val keyInstant = Instant.ofEpochMilli(LongBinding.entryToLong(key))
-                if (keyInstant > from) {
-                    logger.trace { "too early call, now $from, queue due $keyInstant" }
+                val key = cursor.key.toInstant()
+                if (key > from) {
+                    logger.trace { "too early call, now $from, queue due $key" }
                     break
                 }
 
@@ -61,7 +61,7 @@ class XodusLeventBus(
 
                 indexStore.put(
                     txn,
-                    LongBinding.longToEntry(keyInstant.plusMillis(message.maxDuration.toMillis()).toEpochMilli()),
+                    LongBinding.longToEntry(key.plusMillis(message.maxDuration.toMillis()).toEpochMilli()),
                     StringBinding.stringToEntry(message.id)
                 )
 
@@ -70,6 +70,24 @@ class XodusLeventBus(
             null
         }
     }
+
+    fun dumpIndexToList(): List<Pair<Instant, String>> = env.computeInTransaction { txn ->
+
+        val result = mutableListOf<Pair<Instant, String>>()
+        val indexStore = openIndexStore(txn)
+
+        indexStore.openCursor(txn).use { cursor ->
+            while (cursor.next) {
+                val key = cursor.key.toInstant()
+                val value = StringBinding.entryToString(cursor.value)
+                result.add(key to value)
+            }
+        }
+
+        result
+    }
+
+    private fun ByteIterable.toInstant() = Instant.ofEpochMilli(LongBinding.entryToLong(this))
 
     private fun indexStoreName() = properties.getProperty("queueMainIndex", "LeventbusStoreMainIndex")
 

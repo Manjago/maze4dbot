@@ -28,11 +28,26 @@ internal class XodusLeventBusTest {
 
     @Test
     internal fun oneItem() {
-        val pushedMessage = LeventMessage("1", "2", "3", "4", Duration.ofSeconds(5))
+        val id = "1"
+        val maxDuration = Duration.ofSeconds(5)
+
+        val pushedMessage = LeventMessage(id, "2", "3", "4", maxDuration)
         leventBus.push(pushedMessage)
+
+        val due = with(leventBus.dumpIndexToList()) {
+            assertEquals(1, this.size)
+            assertEquals(id, this[0].second)
+            this[0].first
+        }
+
 
         val pulledMessage = leventBus.pull()
         assertEquals(pushedMessage, pulledMessage)
-        // todo сделать тест похитрее - с повторами
+
+        with(leventBus.dumpIndexToList()) {
+            assertEquals(1, this.size)
+            assertEquals(id, this[0].second)
+            assertEquals(due.plus(maxDuration), this[0].first)
+        }
     }
 }
