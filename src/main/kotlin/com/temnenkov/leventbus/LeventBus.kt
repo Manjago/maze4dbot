@@ -2,8 +2,6 @@ package com.temnenkov.leventbus
 
 import java.time.Instant
 
-interface LeventBus {
-    fun push(message: LeventMessage, due: Instant = Instant.now())
+interface LeventBus<T, E> : LeventBusForActor<T, E> {
     fun pull(from: Instant = Instant.now()): LeventMessage?
-    fun done(messageId: String)
 }

@@ -15,7 +15,7 @@ import java.util.Properties
 
 class XodusLeventBus(
     appendProperties: Properties? = null
-) : LeventBus {
+) : LeventBus<Transaction, Environment> {
 
     private val properties: Properties = Properties(System.getProperties())
 
@@ -25,7 +25,7 @@ class XodusLeventBus(
 
     private val env: Environment = newInstance(properties.getProperty(LeventProperties.LB_DATABASE, "~/.leventbusData"))
 
-    override fun push(message: LeventMessage, due: Instant) = env.executeInTransaction { txn ->
+    override fun push(message: LeventMessage, due: Instant, action: ((txn: Transaction) -> Unit)?) = env.executeInTransaction { txn ->
 
         openQueueStore(txn).put(
             txn,
@@ -38,6 +38,8 @@ class XodusLeventBus(
             LongBinding.longToEntry(due.toEpochMilli()),
             StringBinding.stringToEntry(message.id)
         )
+
+        action?.invoke(txn)
     }
 
     override fun pull(from: Instant): LeventMessage? = env.computeInTransaction { txn ->
@@ -81,6 +83,8 @@ class XodusLeventBus(
         val queueStore = openQueueStore(txn)
         queueStore.delete(txn, StringBinding.stringToEntry(messageId))
     }
+
+    override fun env(): Environment = env
 
     fun dumpIndexToList(): List<Pair<Instant, String>> = env.computeInTransaction { txn ->
 
