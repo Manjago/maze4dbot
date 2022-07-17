@@ -1,5 +1,6 @@
 package com.temnenkov.leventbus
 
+import com.temnenkov.levent.LeventProperties
 import jetbrains.exodus.ArrayByteIterable
 import jetbrains.exodus.ByteIterable
 import jetbrains.exodus.bindings.LongBinding
@@ -16,13 +17,13 @@ class XodusLeventBus(
     appendProperties: Properties? = null
 ) : LeventBus {
 
-    private val properties: Properties
+    private val properties: Properties = Properties(System.getProperties())
+
     init {
-        properties = Properties(System.getProperties())
         appendProperties?.forEach { properties.put(it.key, it.value) }
     }
 
-    private val env: Environment = newInstance(properties.getProperty(LB_DATABASE, "~/.leventbusData"))
+    private val env: Environment = newInstance(properties.getProperty(LeventProperties.LB_DATABASE, "~/.leventbusData"))
 
     override fun push(message: LeventMessage, due: Instant) = env.executeInTransaction { txn ->
 
@@ -115,9 +116,9 @@ class XodusLeventBus(
 
     private fun ByteIterable.toInstant() = Instant.ofEpochMilli(LongBinding.entryToLong(this))
 
-    private fun indexStoreName() = properties.getProperty(LB_INDEX_NAME, "LeventbusStoreMainIndex")
+    private fun indexStoreName() = properties.getProperty(LeventProperties.LB_INDEX_NAME, "LeventbusStoreMainIndex")
 
-    private fun queueStoreName() = properties.getProperty(LB_STORE_NAME, "LeventbusStore")
+    private fun queueStoreName() = properties.getProperty(LeventProperties.LB_STORE_NAME, "LeventbusStore")
 
     private fun openIndexStore(txn: Transaction) = env.openStore(
         indexStoreName(),
@@ -130,9 +131,5 @@ class XodusLeventBus(
 
     companion object {
         private val logger = KotlinLogging.logger { }
-
-        const val LB_DATABASE = "leventbus.database"
-        const val LB_INDEX_NAME = "queueMainIndex"
-        const val LB_STORE_NAME = "queueMainStore"
     }
 }

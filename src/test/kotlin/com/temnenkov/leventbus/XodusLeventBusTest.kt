@@ -1,7 +1,7 @@
 package com.temnenkov.leventbus
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
-import com.temnenkov.leventbus.XodusLeventBus.Companion.LB_DATABASE
+import com.temnenkov.levent.LeventProperties
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
@@ -15,7 +15,7 @@ internal class XodusLeventBusTest {
     @BeforeEach
     internal fun setUp() {
         val properties = System.getProperties()
-        properties.setProperty(LB_DATABASE, "target/.xodus-${NanoIdUtils.randomNanoId()}")
+        properties.setProperty(LeventProperties.LB_DATABASE, "target/.xodus-${NanoIdUtils.randomNanoId()}")
 
         leventBus = XodusLeventBus()
     }
