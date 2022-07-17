@@ -25,9 +25,10 @@ class XodusLeventBus(
 
     private val env: Environment = newInstance(properties.getProperty(LeventProperties.LB_DATABASE, "~/.leventbusData"))
 
-    override fun push(message: LeventMessage, due: Instant, action: ((txn: Transaction) -> Unit)?) = env.executeInTransaction { txn ->
+    override fun push(message: LeventMessage, due: Instant, doneMesssageId: String?, action: ((txn: Transaction) -> Unit)?) = env.executeInTransaction { txn ->
 
-        openQueueStore(txn).put(
+        val queueStore = openQueueStore(txn)
+        queueStore.put(
             txn,
             StringBinding.stringToEntry(message.id),
             ArrayByteIterable(message.toByteArray())
@@ -39,6 +40,9 @@ class XodusLeventBus(
             StringBinding.stringToEntry(message.id)
         )
 
+        doneMesssageId?.let { messageId ->
+            queueStore.delete(txn, StringBinding.stringToEntry(messageId))
+        }
         action?.invoke(txn)
     }
 

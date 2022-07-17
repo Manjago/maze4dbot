@@ -2,15 +2,13 @@ package com.temnenkov.leventactor
 
 import com.temnenkov.levent.LeventProperties
 import com.temnenkov.leventbus.LeventBus
-import jetbrains.exodus.env.Environment
-import jetbrains.exodus.env.Transaction
 import mu.KotlinLogging
 import java.util.Properties
 
-class LeventLoopWorker(
+class LeventLoopWorker<T, E>(
     private val workerId: String,
-    private val leventBus: LeventBus<Transaction, Environment>,
-    private val actors: Map<String, LeventActor<Transaction, Environment>>,
+    private val leventBus: LeventBus<T, E>,
+    private val actors: Map<String, LeventActor<T, E>>,
     appendProperties: Properties? = null
 ) : Runnable {
 
@@ -24,12 +22,11 @@ class LeventLoopWorker(
         while (!Thread.interrupted()) {
             try {
                 val message = leventBus.pull()
-                if (message == null) {
+                if (message != null) {
+                    actors[message.to]?.handleMessage(message, leventBus)
+                } else {
                     Thread.sleep(loopStep)
-                    continue
                 }
-
-                actors[message.to]?.handleMessage(message, leventBus)
             } catch (ex: InterruptedException) {
                 logger.warn(ex) { "Interrupted $workerId" }
                 Thread.currentThread().interrupt()
