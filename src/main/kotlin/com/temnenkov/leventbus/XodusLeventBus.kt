@@ -13,10 +13,16 @@ import java.time.Instant
 import java.util.Properties
 
 class XodusLeventBus(
-    private val properties: Properties
+    appendProperties: Properties? = null
 ) : LeventBus {
 
-    private val env: Environment = newInstance(properties.getProperty("database", "~/.leventbusData"))
+    private val properties: Properties
+    init {
+        properties = Properties(System.getProperties())
+        appendProperties?.forEach { properties.put(it.key, it.value) }
+    }
+
+    private val env: Environment = newInstance(properties.getProperty(LB_DATABASE, "~/.leventbusData"))
 
     override fun push(message: LeventMessage, due: Instant) = env.executeInTransaction { txn ->
 
@@ -109,9 +115,9 @@ class XodusLeventBus(
 
     private fun ByteIterable.toInstant() = Instant.ofEpochMilli(LongBinding.entryToLong(this))
 
-    private fun indexStoreName() = properties.getProperty("queueMainIndex", "LeventbusStoreMainIndex")
+    private fun indexStoreName() = properties.getProperty(LB_INDEX_NAME, "LeventbusStoreMainIndex")
 
-    private fun queueStoreName() = properties.getProperty("queue", "LeventbusStore")
+    private fun queueStoreName() = properties.getProperty(LB_STORE_NAME, "LeventbusStore")
 
     private fun openIndexStore(txn: Transaction) = env.openStore(
         indexStoreName(),
@@ -124,5 +130,9 @@ class XodusLeventBus(
 
     companion object {
         private val logger = KotlinLogging.logger { }
+
+        const val LB_DATABASE = "leventbus.database"
+        const val LB_INDEX_NAME = "queueMainIndex"
+        const val LB_STORE_NAME = "queueMainStore"
     }
 }
