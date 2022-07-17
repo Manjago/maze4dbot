@@ -70,6 +70,11 @@ class XodusLeventBus(
         }
     }
 
+    override fun done(messageId: String) = env.executeInTransaction { txn ->
+        val queueStore = openQueueStore(txn)
+        queueStore.delete(txn, StringBinding.stringToEntry(messageId))
+    }
+
     fun dumpIndexToList(): List<Pair<Instant, String>> = env.computeInTransaction { txn ->
 
         val result = mutableListOf<Pair<Instant, String>>()
@@ -79,6 +84,22 @@ class XodusLeventBus(
             while (cursor.next) {
                 val key = cursor.key.toInstant()
                 val value = StringBinding.entryToString(cursor.value)
+                result.add(key to value)
+            }
+        }
+
+        result
+    }
+
+    fun dumpQueueToList(): List<Pair<String, LeventMessage>> = env.computeInTransaction { txn ->
+
+        val result = mutableListOf<Pair<String, LeventMessage>>()
+        val indexStore = openQueueStore(txn)
+
+        indexStore.openCursor(txn).use { cursor ->
+            while (cursor.next) {
+                val key = StringBinding.entryToString(cursor.key)
+                val value = cursor.value.bytesUnsafe.toLeventMessage()
                 result.add(key to value)
             }
         }

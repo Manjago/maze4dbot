@@ -27,26 +27,31 @@ internal class XodusLeventBusTest {
     }
 
     @Test
-    internal fun oneItem() {
+    internal fun pullAndDone() {
         val id = "1"
         val maxDuration = Duration.ofSeconds(5)
 
         val pushedMessage = LeventMessage(id, "2", "3", "4", maxDuration)
         leventBus.push(pushedMessage)
 
-        val due = with(leventBus.dumpIndexToList()) {
-            assertEquals(1, this.size)
-            assertEquals(id, this[0].second)
-            this[0].first
-        }
+        leventBus.checkQueueElement(1, 0, id, pushedMessage)
+
+        val due = leventBus.indexElementDate(1, 0, id)
 
         val pulledMessage = leventBus.pull()
         assertEquals(pushedMessage, pulledMessage)
 
-        with(leventBus.dumpIndexToList()) {
-            assertEquals(1, this.size)
-            assertEquals(id, this[0].second)
-            assertEquals(due.plus(maxDuration), this[0].first)
-        }
+        leventBus.checkIndexElement(1, 0, id, due.plus(maxDuration))
+        leventBus.checkQueueElement(1, 0, id, pushedMessage)
+
+        leventBus.done(id)
+
+        leventBus.checkIndexElement(1, 0, id, due.plus(maxDuration))
+        leventBus.checkEmptyQueue()
+
+        assertNull(leventBus.pull((due.plus(maxDuration).plus(maxDuration))))
+
+        leventBus.checkEmptyIndex()
+        leventBus.checkEmptyQueue()
     }
 }
