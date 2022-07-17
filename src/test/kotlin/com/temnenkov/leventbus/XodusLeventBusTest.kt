@@ -40,7 +40,6 @@ internal class XodusLeventBusTest {
             this[0].first
         }
 
-
         val pulledMessage = leventBus.pull()
         assertEquals(pushedMessage, pulledMessage)
 

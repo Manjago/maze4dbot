@@ -41,7 +41,6 @@ class XodusLeventBus(
         indexStore.openCursor(txn).use { cursor ->
 
             while (cursor.next) {
-
                 val key = cursor.key.toInstant()
                 if (key > from) {
                     logger.trace { "too early call, now $from, queue due $key" }
@@ -94,7 +93,9 @@ class XodusLeventBus(
     private fun queueStoreName() = properties.getProperty("queue", "LeventbusStore")
 
     private fun openIndexStore(txn: Transaction) = env.openStore(
-        indexStoreName(), StoreConfig.WITH_DUPLICATES, txn
+        indexStoreName(),
+        StoreConfig.WITH_DUPLICATES,
+        txn
     )
 
     private fun openQueueStore(txn: Transaction) =
