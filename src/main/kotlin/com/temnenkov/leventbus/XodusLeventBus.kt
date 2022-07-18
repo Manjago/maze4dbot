@@ -1,55 +1,22 @@
 package com.temnenkov.leventbus
 
-import com.temnenkov.levent.LeventProperties
-import jetbrains.exodus.ArrayByteIterable
-import jetbrains.exodus.ByteIterable
+import com.temnenkov.openIndexStore
+import com.temnenkov.openQueueStore
+import com.temnenkov.toInstant
 import jetbrains.exodus.bindings.LongBinding
 import jetbrains.exodus.bindings.StringBinding
 import jetbrains.exodus.env.Environment
-import jetbrains.exodus.env.Environments.newInstance
-import jetbrains.exodus.env.StoreConfig
-import jetbrains.exodus.env.Transaction
 import mu.KotlinLogging
 import java.time.Instant
-import java.util.Properties
 
 class XodusLeventBus(
-    appendProperties: Properties? = null
-) : LeventBus<Transaction, Environment> {
-
-    private val properties: Properties = Properties(System.getProperties())
-
-    init {
-        appendProperties?.forEach { properties.put(it.key, it.value) }
-    }
-
-    private val env: Environment = newInstance(properties.getProperty(LeventProperties.LB_DATABASE, "~/.leventbusData"))
-
-    override fun push(message: LeventMessage, due: Instant, doneMesssageId: String?, action: ((txn: Transaction) -> Unit)?) = env.executeInTransaction { txn ->
-
-        val queueStore = openQueueStore(txn)
-        queueStore.put(
-            txn,
-            StringBinding.stringToEntry(message.id),
-            ArrayByteIterable(message.toByteArray())
-        )
-
-        openIndexStore(txn).put(
-            txn,
-            LongBinding.longToEntry(due.toEpochMilli()),
-            StringBinding.stringToEntry(message.id)
-        )
-
-        doneMesssageId?.let { messageId ->
-            queueStore.delete(txn, StringBinding.stringToEntry(messageId))
-        }
-        action?.invoke(txn)
-    }
+    private val env: Environment
+) : LeventBus {
 
     override fun pull(from: Instant): LeventMessage? = env.computeInTransaction { txn ->
 
-        val indexStore = openIndexStore(txn)
-        val queueStore = openQueueStore(txn)
+        val indexStore = env.openIndexStore(txn)
+        val queueStore = env.openQueueStore(txn)
 
         indexStore.openCursor(txn).use { cursor ->
 
@@ -83,17 +50,12 @@ class XodusLeventBus(
         }
     }
 
-    override fun done(messageId: String) = env.executeInTransaction { txn ->
-        val queueStore = openQueueStore(txn)
-        queueStore.delete(txn, StringBinding.stringToEntry(messageId))
-    }
-
-    override fun env(): Environment = env
+    fun env(): Environment = env
 
     fun dumpIndexToList(): List<Pair<Instant, String>> = env.computeInTransaction { txn ->
 
         val result = mutableListOf<Pair<Instant, String>>()
-        val indexStore = openIndexStore(txn)
+        val indexStore = env.openIndexStore(txn)
 
         indexStore.openCursor(txn).use { cursor ->
             while (cursor.next) {
@@ -109,7 +71,7 @@ class XodusLeventBus(
     fun dumpQueueToList(): List<Pair<String, LeventMessage>> = env.computeInTransaction { txn ->
 
         val result = mutableListOf<Pair<String, LeventMessage>>()
-        val indexStore = openQueueStore(txn)
+        val indexStore = env.openQueueStore(txn)
 
         indexStore.openCursor(txn).use { cursor ->
             while (cursor.next) {
@@ -121,21 +83,6 @@ class XodusLeventBus(
 
         result
     }
-
-    private fun ByteIterable.toInstant() = Instant.ofEpochMilli(LongBinding.entryToLong(this))
-
-    private fun indexStoreName() = properties.getProperty(LeventProperties.LB_INDEX_NAME, "LeventbusStoreMainIndex")
-
-    private fun queueStoreName() = properties.getProperty(LeventProperties.LB_STORE_NAME, "LeventbusStore")
-
-    private fun openIndexStore(txn: Transaction) = env.openStore(
-        indexStoreName(),
-        StoreConfig.WITH_DUPLICATES,
-        txn
-    )
-
-    private fun openQueueStore(txn: Transaction) =
-        env.openStore(queueStoreName(), StoreConfig.WITHOUT_DUPLICATES, txn)
 
     companion object {
         private val logger = KotlinLogging.logger { }

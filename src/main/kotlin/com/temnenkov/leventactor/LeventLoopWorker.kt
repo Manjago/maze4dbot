@@ -1,29 +1,35 @@
 package com.temnenkov.leventactor
 
-import com.temnenkov.levent.LeventProperties
+import com.temnenkov.db.XodusQueueDb
+import com.temnenkov.db.XodusStoreDb
 import com.temnenkov.leventbus.LeventBus
+import jetbrains.exodus.env.Environment
 import mu.KotlinLogging
-import java.util.Properties
 
-class LeventLoopWorker<T, E>(
+class LeventLoopWorker(
     private val workerId: String,
-    private val leventBus: LeventBus<T, E>,
-    private val actors: Map<String, LeventActor<T, E>>,
-    appendProperties: Properties? = null
+    private val leventBus: LeventBus,
+    private val actors: Map<String, LeventActor>,
+    private val env: Environment,
+    private val loopStep: Long
 ) : Runnable {
-
-    private val properties: Properties = Properties(System.getProperties())
-    init {
-        appendProperties?.forEach { properties.put(it.key, it.value) }
-    }
-    private val loopStep = properties.getProperty(LeventProperties.LB_LOOP_STEP, "100").toLong()
 
     override fun run() {
         while (!Thread.interrupted()) {
             try {
                 val message = leventBus.pull()
                 if (message != null) {
-                    actors[message.to]?.handleMessage(message, leventBus)
+                    val actor = actors[message.to]
+
+                    if (actor != null) {
+                        env.executeInTransaction { txn ->
+                            actor.handleMessage(
+                                message,
+                                XodusStoreDb(env, txn),
+                                XodusQueueDb(env, txn)
+                            )
+                        }
+                    }
                 } else {
                     Thread.sleep(loopStep)
                 }

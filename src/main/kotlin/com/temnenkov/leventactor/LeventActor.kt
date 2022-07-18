@@ -1,8 +1,9 @@
 package com.temnenkov.leventactor
 
-import com.temnenkov.leventbus.LeventBusForActor
+import com.temnenkov.db.QueueDb
+import com.temnenkov.db.StoreDb
 import com.temnenkov.leventbus.LeventMessage
 
-interface LeventActor<T, E> {
-    fun handleMessage(leventMessage: LeventMessage, bus: LeventBusForActor<T, E>)
+interface LeventActor {
+    fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb)
 }
