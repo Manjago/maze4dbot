@@ -32,6 +32,14 @@ internal class PingPongTest {
 
             logger.info { "pong $id got $intValue from $other" }
 
+            val trace = storeDb.get("PongActor", id)
+            val newTrace = if (trace == null) {
+                leventMessage.payload
+            } else {
+                trace + leventMessage.payload
+            }
+            storeDb.put("PongActor", id, newTrace)
+
             if (intValue <= 0) {
                 logger.info { "pong $id done with $intValue" }
                 queueDb.done(leventMessage.id)

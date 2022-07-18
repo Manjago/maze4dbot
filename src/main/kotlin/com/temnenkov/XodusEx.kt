@@ -1,5 +1,6 @@
 package com.temnenkov
 
+import com.temnenkov.db.XodusQueueDb
 import com.temnenkov.leventbus.LeventMessage
 import com.temnenkov.leventbus.toByteArray
 import jetbrains.exodus.ArrayByteIterable
@@ -29,6 +30,14 @@ fun Environment.openIndexStore(txn: Transaction) = this.openStore(
 
 fun Environment.openQueueStore(txn: Transaction) =
     this.openStore(QUEUE_STORE, StoreConfig.WITHOUT_DUPLICATES, txn)
+
+fun Environment.push(message: LeventMessage) = this.executeInTransaction { txn ->
+    XodusQueueDb(this, txn).push(message, Instant.now())
+}
+
+fun Environment.done(messageId: String) = this.executeInTransaction { txn ->
+    XodusQueueDb(this, txn).done(messageId)
+}
 
 private const val INDEX_STORE = "___index___"
 private const val QUEUE_STORE = "___queue___"
