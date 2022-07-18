@@ -4,6 +4,7 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import com.temnenkov.db.QueueDb
 import com.temnenkov.db.StoreDb
 import com.temnenkov.db.XodusQueueDb
+import com.temnenkov.get
 import com.temnenkov.levent.LeventProperties
 import com.temnenkov.leventactor.LeventActor
 import com.temnenkov.leventactor.leventLoop
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.Instant
+import kotlin.test.assertEquals
 
 internal class PingPongTest {
 
@@ -64,6 +66,7 @@ internal class PingPongTest {
 
         companion object {
             private val logger = KotlinLogging.logger { }
+            const val COLLECTION = "PongActor"
         }
     }
 
@@ -91,6 +94,7 @@ internal class PingPongTest {
                 bus.dumpQueueToList()
             }.has { this.isEmpty() }
 
-        // todo тест на состояние
+        assertEquals("420", environment.get(PongActor.COLLECTION, "1"))
+        assertEquals("531", environment.get(PongActor.COLLECTION, "2"))
     }
 }

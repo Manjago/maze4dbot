@@ -1,6 +1,7 @@
 package com.temnenkov
 
 import com.temnenkov.db.XodusQueueDb
+import com.temnenkov.db.XodusStoreDb
 import com.temnenkov.leventbus.LeventMessage
 import com.temnenkov.leventbus.toByteArray
 import jetbrains.exodus.ArrayByteIterable
@@ -37,6 +38,10 @@ fun Environment.push(message: LeventMessage) = this.executeInTransaction { txn -
 
 fun Environment.done(messageId: String) = this.executeInTransaction { txn ->
     XodusQueueDb(this, txn).done(messageId)
+}
+
+fun Environment.get(collection: String, key: String) = this.computeInTransaction { txn ->
+    XodusStoreDb(this, txn).get(collection, key)
 }
 
 private const val INDEX_STORE = "___index___"
