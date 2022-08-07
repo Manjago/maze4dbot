@@ -8,7 +8,14 @@ class DevTest {
     @Test
     internal fun dev() {
         enrichSystemProperties("src/test/kotlin/com/temnenkov/leventbus/dev.properties")
-        val result = TelegramBot().getUpdates(0)
+        val telegramBot = TelegramBot()
+        val result = telegramBot.getUpdates(496209290)
         println(result)
+
+        result.forEach {
+            println("wanna sent to ${it.from} messageId ${it.messageId}")
+            val status = telegramBot.sendReplyMessage(it.from, it.messageId, "Вижу '${it.text}' - но я пока в разработке, ничего не сделаю")
+            println("sent " + status)
+        }
     }
 }

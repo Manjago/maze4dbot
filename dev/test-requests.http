@@ -2,8 +2,8 @@ POST https://api.telegram.org/{{token}}/getUpdates
 Content-Type: application/json
 
 {
-  "offset": 0,
-  "timeout": 60
+  "offset": 496209290,
+  "timeout": 5
 }
 
 ###
@@ -12,11 +12,8 @@ Content-Type: application/json
 
 {
   "chat_id": 217075,
-  "text": "ыыы2",
-  "protect_content": true,
-  "reply_markup" : {
-    "force_reply": true
-  }
+  "text": "resplu",
+  "reply_to_message_id": 12
 }
 
 ###
