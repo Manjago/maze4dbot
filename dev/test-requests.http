@@ -1,0 +1,23 @@
+POST https://api.telegram.org/{{token}}/getUpdates
+Content-Type: application/json
+
+{
+  "offset": 496209287,
+  "timeout": 60
+}
+
+###
+POST https://api.telegram.org/{{token}}/sendMessage
+Content-Type: application/json
+
+{
+  "chat_id": 217075,
+  "text": "ыыы2",
+  "protect_content": true,
+  "reply_markup" : {
+    "force_reply": true
+  }
+}
+
+###
+GET https://api.telegram.org/{{token}}/getMe
