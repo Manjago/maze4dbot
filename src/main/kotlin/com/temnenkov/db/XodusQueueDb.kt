@@ -1,9 +1,9 @@
 package com.temnenkov.db
 
 import com.temnenkov.leventbus.LeventMessage
-import com.temnenkov.openIndexStore
-import com.temnenkov.openQueueStore
-import com.temnenkov.toEntry
+import com.temnenkov.utils.openIndexStore
+import com.temnenkov.utils.openQueueStore
+import com.temnenkov.utils.toEntry
 import jetbrains.exodus.env.Environment
 import jetbrains.exodus.env.Transaction
 import java.time.Instant

@@ -1,9 +1,9 @@
 package com.temnenkov.leventbus
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
-import com.temnenkov.done
 import com.temnenkov.levent.LeventProperties
-import com.temnenkov.push
+import com.temnenkov.utils.done
+import com.temnenkov.utils.push
 import jetbrains.exodus.env.Environment
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

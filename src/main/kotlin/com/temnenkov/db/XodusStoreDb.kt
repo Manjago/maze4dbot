@@ -1,7 +1,7 @@
 package com.temnenkov.db
 
-import com.temnenkov.fromEntry
-import com.temnenkov.toEntry
+import com.temnenkov.utils.fromEntry
+import com.temnenkov.utils.toEntry
 import jetbrains.exodus.env.Environment
 import jetbrains.exodus.env.Store
 import jetbrains.exodus.env.StoreConfig

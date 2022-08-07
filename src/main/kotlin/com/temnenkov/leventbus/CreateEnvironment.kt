@@ -8,7 +8,7 @@ import java.util.Properties
 fun createEnvironment(appendProperties: Properties? = null): Pair<Environment, Long> {
     val properties = Properties(System.getProperties())
 
-    appendProperties?.forEach { properties.put(it.key, it.value) }
+    appendProperties?.forEach { properties[it.key] = it.value }
 
     val loopStep = properties.getProperty(LeventProperties.LB_LOOP_STEP, "100").toLong()
 

@@ -1,8 +1,8 @@
 package com.temnenkov.leventbus
 
-import com.temnenkov.openIndexStore
-import com.temnenkov.openQueueStore
-import com.temnenkov.toInstant
+import com.temnenkov.utils.openIndexStore
+import com.temnenkov.utils.openQueueStore
+import com.temnenkov.utils.toInstant
 import jetbrains.exodus.bindings.LongBinding
 import jetbrains.exodus.bindings.StringBinding
 import jetbrains.exodus.env.Environment

@@ -15,7 +15,7 @@ class DevTest {
         result.forEach {
             println("wanna sent to ${it.from} messageId ${it.messageId}")
             val status = telegramBot.sendReplyMessage(it.from, it.messageId, "Вижу '${it.text}' - но я пока в разработке, ничего не сделаю")
-            println("sent " + status)
+            println("sent $status")
         }
     }
 }

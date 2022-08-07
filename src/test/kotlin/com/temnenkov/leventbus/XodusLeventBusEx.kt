@@ -28,9 +28,3 @@ fun XodusLeventBus.checkQueueElement(size: Int, index: Int, id: String, message:
     assertEquals(id, this[index].first)
     assertEquals(message, this[index].second)
 }
-
-fun XodusLeventBus.queueElementMessage(size: Int, index: Int, id: String) = with(this.dumpQueueToList()) {
-    assertEquals(size, this.size)
-    assertEquals(id, this[index].first)
-    this[index].first
-}

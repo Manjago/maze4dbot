@@ -1,4 +1,4 @@
-package com.temnenkov
+package com.temnenkov.utils
 
 import com.temnenkov.db.XodusQueueDb
 import com.temnenkov.db.XodusStoreDb
@@ -13,15 +13,15 @@ import jetbrains.exodus.env.StoreConfig
 import jetbrains.exodus.env.Transaction
 import java.time.Instant
 
-fun String.toEntry() = StringBinding.stringToEntry(this)
+fun String.toEntry(): ArrayByteIterable = StringBinding.stringToEntry(this)
 
-fun ByteIterable.fromEntry() = StringBinding.entryToString(this)
+fun ByteIterable.fromEntry(): String = StringBinding.entryToString(this)
 
 fun LeventMessage.toEntry(): ByteIterable = ArrayByteIterable(this.toByteArray())
 
-fun Instant.toEntry() = LongBinding.longToEntry(this.toEpochMilli())
+fun Instant.toEntry(): ArrayByteIterable = LongBinding.longToEntry(this.toEpochMilli())
 
-fun ByteIterable.toInstant() = Instant.ofEpochMilli(LongBinding.entryToLong(this))
+fun ByteIterable.toInstant(): Instant = Instant.ofEpochMilli(LongBinding.entryToLong(this))
 
 fun Environment.openIndexStore(txn: Transaction) = this.openStore(
     INDEX_STORE,

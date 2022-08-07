@@ -4,10 +4,10 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import com.temnenkov.db.QueueDb
 import com.temnenkov.db.StoreDb
 import com.temnenkov.db.XodusQueueDb
-import com.temnenkov.get
 import com.temnenkov.levent.LeventProperties
 import com.temnenkov.leventactor.LeventActor
 import com.temnenkov.leventactor.leventLoop
+import com.temnenkov.utils.get
 import mu.KotlinLogging
 import org.awaitility.Awaitility
 import org.awaitility.kotlin.has
