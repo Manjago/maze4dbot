@@ -4,9 +4,8 @@ import com.temnenkov.levent.LeventProperties
 import com.temnenkov.leventactor.leventLoop
 import com.temnenkov.leventbus.XodusLeventBus
 import com.temnenkov.leventbus.createEnvironment
+import com.temnenkov.utils.enrichSystemProperties
 import mu.KotlinLogging
-import java.io.FileInputStream
-import java.util.Properties
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
@@ -14,15 +13,10 @@ fun main(args: Array<String>) {
         return
     }
 
-    val appProps = Properties()
-    appProps.load(FileInputStream(args[0]))
-    val systemProperties = System.getProperties()
-    appProps.forEach {
-        systemProperties.setProperty(it.key.toString(), it.value.toString())
-    }
+    enrichSystemProperties(args[0])
 
     val (environment, loopStep) = createEnvironment()
-    val dbFile = systemProperties.getProperty(LeventProperties.LB_DATABASE)
+    val dbFile = System.getProperty(LeventProperties.LB_DATABASE)
     logger.info { "environment created: dbfile  $dbFile, loopStep $loopStep" }
 
     val bus = XodusLeventBus(environment)

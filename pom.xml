@@ -22,7 +22,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <xodus.version>2.0.1</xodus.version>
         <logback.version>1.2.11</logback.version>
-        <junit-jupiter.version>5.8.2</junit-jupiter.version>
+        <junit-jupiter.version>5.9.0</junit-jupiter.version>
         <awaitility.version>4.2.0</awaitility.version>
     </properties>
 
@@ -257,6 +257,13 @@
             <version>${awaitility.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
         <!-- etc-->
         <dependency>
             <groupId>com.aventrix.jnanoid</groupId>

@@ -2,7 +2,7 @@ POST https://api.telegram.org/{{token}}/getUpdates
 Content-Type: application/json
 
 {
-  "offset": 496209287,
+  "offset": 0,
   "timeout": 60
 }
 
