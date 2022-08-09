@@ -31,6 +31,13 @@ fun main(args: Array<String>) {
     )
 
     logger.info { "event loop started" }
+
+/*
+    environment.push(LeventMessage(
+        to = ActorAddress.TELEGRAM_INBOUND,
+
+    ))
+*/
 }
 
 private val logger = KotlinLogging.logger {}

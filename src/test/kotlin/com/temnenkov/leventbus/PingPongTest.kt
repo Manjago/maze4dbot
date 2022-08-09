@@ -30,15 +30,15 @@ internal class PingPongTest {
 
         override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb) {
             val other = leventMessage.from
-            val intValue = leventMessage.payload.toInt()
+            val intValue = leventMessage.payload?.toInt() ?: 0
 
             logger.info { "pong $id got $intValue from $other" }
 
             val trace = storeDb.get("PongActor", id)
             val newTrace = if (trace == null) {
-                leventMessage.payload
+                leventMessage.payload ?: "0"
             } else {
-                trace + leventMessage.payload
+                trace + (leventMessage.payload ?: "0")
             }
             storeDb.put("PongActor", id, newTrace)
 
