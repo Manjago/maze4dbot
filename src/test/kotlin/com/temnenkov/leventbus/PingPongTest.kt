@@ -4,6 +4,7 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import com.temnenkov.db.QueueDb
 import com.temnenkov.db.StoreDb
 import com.temnenkov.levent.LeventProperties
+import com.temnenkov.leventactor.DeadActor
 import com.temnenkov.leventactor.LeventActor
 import com.temnenkov.leventactor.leventLoop
 import com.temnenkov.utils.get
@@ -88,7 +89,8 @@ internal class PingPongTest {
             bus,
             mapOf("1" to PongActor("1"), "2" to PongActor("2")),
             environment,
-            loopStep
+            loopStep,
+            DeadActor()
         )
 
         Awaitility.await().atMost(Duration.ofSeconds(20L))

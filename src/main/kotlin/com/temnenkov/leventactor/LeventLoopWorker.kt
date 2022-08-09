@@ -11,7 +11,8 @@ class LeventLoopWorker(
     private val leventBus: LeventBus,
     private val actors: Map<String, LeventActor>,
     private val env: Environment,
-    private val loopStep: Long
+    private val loopStep: Long,
+    private val deadActor: LeventActor
 ) : Runnable {
 
     override fun run() {
@@ -19,16 +20,14 @@ class LeventLoopWorker(
             try {
                 val message = leventBus.pull()
                 if (message != null) {
-                    val actor = actors[message.to]
+                    val actor = actors[message.to] ?: deadActor
 
-                    if (actor != null) {
-                        env.executeInTransaction { txn ->
-                            actor.handleMessage(
-                                message,
-                                XodusStoreDb(env, txn),
-                                XodusQueueDb(env, txn)
-                            )
-                        }
+                    env.executeInTransaction { txn ->
+                        actor.handleMessage(
+                            message,
+                            XodusStoreDb(env, txn),
+                            XodusQueueDb(env, txn)
+                        )
                     }
                 } else {
                     Thread.sleep(loopStep)

@@ -11,11 +11,12 @@ fun leventLoop(
     leventBus: LeventBus,
     actors: Map<String, LeventActor>,
     environment: Environment,
-    loopStep: Long
+    loopStep: Long,
+    deadActor: LeventActor
 ) {
     val executor: ExecutorService = Executors.newFixedThreadPool(threadsCount, LeventThreadFactory(threadPrefix))
 
     for (i in 0 until threadsCount) {
-        executor.submit(LeventLoopWorker("worker $i", leventBus, actors, environment, loopStep))
+        executor.submit(LeventLoopWorker("worker $i", leventBus, actors, environment, loopStep, deadActor))
     }
 }

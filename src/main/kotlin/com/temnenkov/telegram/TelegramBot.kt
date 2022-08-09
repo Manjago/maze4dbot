@@ -110,7 +110,7 @@ class TelegramBot {
     data class User(val id: Long)
 
     companion object {
-        private fun longPollingTimeout() = System.getProperty(TG_HTTP_CLIENT_LONGPOLLING_TIMEOUT, "5").toLong()
+        fun longPollingTimeout() = System.getProperty(TG_HTTP_CLIENT_LONGPOLLING_TIMEOUT, "5").toLong()
         private val logger = KotlinLogging.logger {}
     }
 }
