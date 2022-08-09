@@ -5,7 +5,7 @@ import java.time.Duration
 
 data class LeventMessage(
     val id: String,
-    val from: String,
+    val from: String? = null,
     val to: String,
     val payload: String,
     val maxDuration: Duration

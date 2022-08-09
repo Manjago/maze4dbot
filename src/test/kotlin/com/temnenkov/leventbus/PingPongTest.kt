@@ -3,11 +3,11 @@ package com.temnenkov.leventbus
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import com.temnenkov.db.QueueDb
 import com.temnenkov.db.StoreDb
-import com.temnenkov.db.XodusQueueDb
 import com.temnenkov.levent.LeventProperties
 import com.temnenkov.leventactor.LeventActor
 import com.temnenkov.leventactor.leventLoop
 import com.temnenkov.utils.get
+import com.temnenkov.utils.push
 import mu.KotlinLogging
 import org.awaitility.Awaitility
 import org.awaitility.kotlin.has
@@ -52,16 +52,18 @@ internal class PingPongTest {
             logger.info { "pong $id wanna send $newIntValue to $other" }
 
             queueDb.done(leventMessage.id)
-            queueDb.push(
-                message = LeventMessage(
-                    NanoIdUtils.randomNanoId(),
-                    id,
-                    other,
-                    (intValue - 1).toString(),
-                    Duration.ofSeconds(5)
-                ),
-                due = Instant.now().plusMillis(200)
-            )
+            if (other != null) {
+                queueDb.push(
+                    message = LeventMessage(
+                        NanoIdUtils.randomNanoId(),
+                        id,
+                        other,
+                        (intValue - 1).toString(),
+                        Duration.ofSeconds(5)
+                    ),
+                    due = Instant.now().plusMillis(200)
+                )
+            }
         }
 
         companion object {
@@ -77,7 +79,7 @@ internal class PingPongTest {
         val bus = XodusLeventBus(environment)
 
         environment.executeInTransaction { txn ->
-            XodusQueueDb(environment, txn).push(LeventMessage(NanoIdUtils.randomNanoId(), "1", "2", "5", Duration.ofSeconds(5)), Instant.now())
+            environment.push(LeventMessage(NanoIdUtils.randomNanoId(), "1", "2", "5", Duration.ofSeconds(5)))
         }
 
         leventLoop(
