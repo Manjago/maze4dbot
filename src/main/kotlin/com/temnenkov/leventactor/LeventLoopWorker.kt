@@ -3,7 +3,6 @@ package com.temnenkov.leventactor
 import com.temnenkov.db.XodusQueueDb
 import com.temnenkov.db.XodusStoreDb
 import com.temnenkov.leventbus.LeventBus
-import com.temnenkov.utils.myExecuteInTransaction
 import jetbrains.exodus.env.Environment
 import mu.KotlinLogging
 
@@ -23,25 +22,20 @@ class LeventLoopWorker(
                 if (message != null) {
                     val actor = actors[message.to] ?: deadActor
 
-                    try {
-                        val result = env.myExecuteInTransaction { txn ->
-                            val queueDb = XodusQueueDb(env, txn)
-                            val toSave = actor.handleMessage(
-                                message,
-                                XodusStoreDb(env, txn)
-                            )
-                            queueDb.done(message.id)
-                            logger.info { "done $message" }
-                            toSave?.forEach {
-                                val (leventMessage, due) = it
-                                queueDb.push(leventMessage, due)
-                            }
+                    val result = env.executeInTransaction { txn ->
+                        val queueDb = XodusQueueDb(env, txn)
+                        val toSave = actor.handleMessage(
+                            message,
+                            XodusStoreDb(env, txn)
+                        )
+                        queueDb.done(message.id)
+                        logger.info { "done $message" }
+                        toSave?.forEach {
+                            val (leventMessage, due) = it
+                            queueDb.push(leventMessage, due)
                         }
-                        logger.info { "exec ok: $result" }
-                    } catch (e: Throwable) {
-                        logger.error(e) { "fail exec in transaction" }
                     }
-                    logger.info { "dump queue='${leventBus.dumpQueueToList()}' index='${leventBus.dumpIndexToList()}'" }
+                    logger.info { "exec ok: $result" }
                 } else {
                     Thread.sleep(loopStep)
                 }

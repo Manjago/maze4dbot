@@ -18,4 +18,7 @@ class DevTest {
             println("sent $status")
         }
     }
+
+    private fun TelegramBot.sendReplyMessage(to: Long, replyToMessageId: Long, text: String): TelegramBot.SendMessageResponse? =
+        sendMessage(TelegramBot.SendMessageRequest(to, text, replyToMessageId))
 }

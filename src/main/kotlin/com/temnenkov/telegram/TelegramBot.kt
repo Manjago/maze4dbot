@@ -47,15 +47,6 @@ class TelegramBot {
         }
     }
 
-    fun sendReplyMessage(to: Long, replyToMessageId: Long, text: String): SendMessageResponse? =
-        internalSendMessage(to, replyToMessageId, text)
-
-    fun sendMessage(to: Long, text: String): SendMessageResponse? =
-        internalSendMessage(to, null, text)
-
-    private fun internalSendMessage(to: Long, replyToMessageId: Long?, text: String): SendMessageResponse? =
-        sendMessage(SendMessageRequest(to, text, replyToMessageId))
-
     fun sendMessage(request: SendMessageRequest): SendMessageResponse? {
         val requestBuilder = HttpRequest.newBuilder(URI.create("https://api.telegram.org/${token()}/sendMessage"))
             .header("Content-Type", "application/json")

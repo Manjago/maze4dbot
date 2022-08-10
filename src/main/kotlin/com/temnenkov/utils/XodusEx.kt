@@ -11,8 +11,6 @@ import jetbrains.exodus.bindings.StringBinding
 import jetbrains.exodus.env.Environment
 import jetbrains.exodus.env.StoreConfig
 import jetbrains.exodus.env.Transaction
-import jetbrains.exodus.env.TransactionalExecutable
-import mu.KotlinLogging
 import java.time.Instant
 
 fun String.toEntry(): ArrayByteIterable = StringBinding.stringToEntry(this)
@@ -46,51 +44,5 @@ fun Environment.get(collection: String, key: String) = this.computeInTransaction
     XodusStoreDb(this, txn).get(collection, key)
 }
 
-fun Environment.myExecuteInTransaction(executable: TransactionalExecutable): Boolean {
-    return myExecuteInTransaction(executable, this.beginTransaction())
-}
-
-fun myExecuteInTransaction(
-    executable: TransactionalExecutable,
-    txn: Transaction
-): Boolean {
-    val result: Boolean
-    try {
-        var counter = 0
-        while (true) {
-            ++counter
-            logger.info { "wanna exec $counter" }
-            executable.execute(txn)
-            logger.info { "exec done" }
-            if (txn.isReadonly || // txn can be read-only if Environment is in read-only mode
-                txn.isFinished || // txn can be finished if, e.g., it was aborted within executable
-                txn.flush()
-            ) {
-                logger.info { "wanna break" }
-                break
-            }
-            logger.info { "wanna revert" }
-            txn.revert()
-            logger.info { "reverted" }
-        }
-    } catch (e: Exception) {
-        logger.error(e) { "exception happens ${e.message}" }
-    } finally {
-        logger.info { "enter finally" }
-        if (!txn.isFinished) {
-            logger.info { "wanna abort" }
-            txn.abort()
-            logger.info { "aborted" }
-            result = false
-        } else {
-            logger.info { "result = true" }
-            result = true
-        }
-        logger.info { "exit finally" }
-    }
-    return result
-}
-
-private val logger = KotlinLogging.logger { }
 private const val INDEX_STORE = "___index___"
 private const val QUEUE_STORE = "___queue___"

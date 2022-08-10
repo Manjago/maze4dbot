@@ -44,9 +44,7 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
 
                 return result.toList()
             } finally {
-                logger.info { "point 4" }
                 worker.set(false)
-                logger.info { "point 5" }
             }
         } else {
             logger.info { "$leventMessage drop" }
