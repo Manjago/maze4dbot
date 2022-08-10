@@ -56,7 +56,10 @@ fun myExecuteInTransaction(
 ): Boolean {
     val result: Boolean
     try {
+        var counter = 0
         while (true) {
+            ++counter
+            logger.info { "wanna exec $counter" }
             executable.execute(txn)
             logger.info { "exec done" }
             if (txn.isReadonly || // txn can be read-only if Environment is in read-only mode
@@ -70,7 +73,10 @@ fun myExecuteInTransaction(
             txn.revert()
             logger.info { "reverted" }
         }
+    } catch (e: Exception) {
+        logger.error(e) { "exception happens ${e.message}" }
     } finally {
+        logger.info { "enter finally" }
         if (!txn.isFinished) {
             logger.info { "wanna abort" }
             txn.abort()
@@ -80,6 +86,7 @@ fun myExecuteInTransaction(
             logger.info { "result = true" }
             result = true
         }
+        logger.info { "exit finally" }
     }
     return result
 }
