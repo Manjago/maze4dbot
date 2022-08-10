@@ -52,7 +52,7 @@ class XodusLeventBus(
 
     fun env(): Environment = env
 
-    fun dumpIndexToList(): List<Pair<Instant, String>> = env.computeInTransaction { txn ->
+    override fun dumpIndexToList(): List<Pair<Instant, String>> = env.computeInTransaction { txn ->
 
         val result = mutableListOf<Pair<Instant, String>>()
         val indexStore = env.openIndexStore(txn)
@@ -68,7 +68,7 @@ class XodusLeventBus(
         result
     }
 
-    fun dumpQueueToList(): List<Pair<String, LeventMessage>> = env.computeInTransaction { txn ->
+    override fun dumpQueueToList(): List<Pair<String, LeventMessage>> = env.computeInTransaction { txn ->
 
         val result = mutableListOf<Pair<String, LeventMessage>>()
         val indexStore = env.openQueueStore(txn)

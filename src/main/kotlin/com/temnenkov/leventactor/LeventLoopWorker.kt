@@ -29,6 +29,7 @@ class LeventLoopWorker(
                             XodusQueueDb(env, txn)
                         )
                     }
+                    logger.info { "dump queue='${leventBus.dumpQueueToList()}' index='${leventBus.dumpIndexToList()}'" }
                 } else {
                     Thread.sleep(loopStep)
                 }
