@@ -1,6 +1,5 @@
 package com.temnenkov.actor
 
-import com.temnenkov.db.QueueDb
 import com.temnenkov.db.StoreDb
 import com.temnenkov.leventactor.LeventActor
 import com.temnenkov.leventbus.LeventMessage
@@ -16,11 +15,12 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
     private val worker = AtomicBoolean(false)
     private var offset = -1L
 
-    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>>? {
+    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb): List<Pair<LeventMessage, Instant>>? {
         if (!worker.compareAndExchange(false, true)) {
             try {
                 val updates = telegramBot.getUpdates(offset + 1)
                 logger.info { "get updates $updates" }
+                val result = mutableListOf<Pair<LeventMessage, Instant>>()
                 if (updates.isNotEmpty()) {
                     offset = updates.maxBy { it.updateId }.updateId
                     logger.info { "set new offset = $offset" }
@@ -32,23 +32,15 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
                             payload = it.toJson()
                         )
                         logger.info { "wanna to send to ${outMessage.to} payload ${outMessage.payload}" }
-                        queueDb.push(outMessage)
-                        logger.info { "sent ${outMessage.id} to ${outMessage.to} payload ${outMessage.payload}" }
-                        val stored = queueDb.getMessageFromQueue(outMessage.id)
-                        if (stored == null) {
-                            logger.error { "NOT STORED $outMessage !!!" }
-                        } else {
-                            logger.info { "stored ok" }
-                        }
+                        result.add(outMessage to Instant.now())
                     }
                 }
-
-                logger.info { "point 1" }
-                logger.info { "point 2" }
-                return listOf(
+                result.add(
                     myMessage() to
                         Instant.now().plusMillis(1000L)
                 )
+
+                return result.toList()
             } finally {
                 logger.info { "point 4" }
                 worker.set(false)

@@ -1,7 +1,6 @@
 package com.temnenkov.leventbus
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
-import com.temnenkov.db.QueueDb
 import com.temnenkov.db.StoreDb
 import com.temnenkov.levent.LeventProperties
 import com.temnenkov.leventactor.DeadActor
@@ -29,7 +28,7 @@ internal class PingPongTest {
 
     class PongActor(private val id: String) : LeventActor {
 
-        override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>>? {
+        override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb): List<Pair<LeventMessage, Instant>>? {
             val other = leventMessage.from
             val intValue = leventMessage.payload.toInt()
 

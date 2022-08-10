@@ -28,8 +28,7 @@ class LeventLoopWorker(
                             val queueDb = XodusQueueDb(env, txn)
                             val toSave = actor.handleMessage(
                                 message,
-                                XodusStoreDb(env, txn),
-                                queueDb
+                                XodusStoreDb(env, txn)
                             )
                             queueDb.done(message.id)
                             logger.info { "done $message" }
