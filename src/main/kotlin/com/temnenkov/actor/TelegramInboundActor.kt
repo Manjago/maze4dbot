@@ -13,17 +13,19 @@ import java.util.concurrent.atomic.AtomicBoolean
 class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
 
     private val worker = AtomicBoolean(false)
-    private var offset = -1L
 
     override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb): List<Pair<LeventMessage, Instant>>? {
         if (!worker.compareAndExchange(false, true)) {
             try {
+                val offset = (storeDb.get("TelegramInboundActor", "offset") ?: "-1").toLong()
+
                 val updates = telegramBot.getUpdates(offset + 1)
                 logger.info { "get updates $updates" }
                 val result = mutableListOf<Pair<LeventMessage, Instant>>()
                 if (updates.isNotEmpty()) {
-                    offset = updates.maxBy { it.updateId }.updateId
-                    logger.info { "set new offset = $offset" }
+                    val newOffset = updates.maxBy { it.updateId }.updateId
+                    logger.info { "set new offset = $newOffset" }
+                    storeDb.put("TelegramInboundActor", "offset", newOffset.toString())
 
                     updates.forEach {
                         val outMessage = LeventMessage(

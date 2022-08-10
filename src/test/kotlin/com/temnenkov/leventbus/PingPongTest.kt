@@ -36,9 +36,9 @@ internal class PingPongTest {
 
             val trace = storeDb.get("PongActor", id)
             val newTrace = if (trace == null) {
-                leventMessage.payload ?: "0"
+                leventMessage.payload
             } else {
-                trace + (leventMessage.payload ?: "0")
+                trace + leventMessage.payload
             }
             storeDb.put("PongActor", id, newTrace)
 
