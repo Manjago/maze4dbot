@@ -37,11 +37,15 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
                         val stored = queueDb.getMessageFromQueue(outMessage.id)
                         if (stored == null) {
                             logger.error { "NOT STORED $outMessage !!!" }
+                        } else {
+                            logger.info { "stored ok" }
                         }
                     }
                 }
 
+                logger.info { "point 1" }
                 queueDb.done(leventMessage.id)
+                logger.info { "point 2" }
                 queueDb.push(
                     LeventMessage(
                         to = ActorAddress.TELEGRAM_INBOUND,
@@ -49,8 +53,11 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
                     ),
                     Instant.now().plusMillis(1000L)
                 )
+                logger.info { "point 3" }
             } finally {
+                logger.info { "point 4" }
                 worker.set(false)
+                logger.info { "point 5" }
             }
         } else {
             queueDb.done(leventMessage.id)

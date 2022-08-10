@@ -3,6 +3,7 @@ package com.temnenkov.leventactor
 import com.temnenkov.db.XodusQueueDb
 import com.temnenkov.db.XodusStoreDb
 import com.temnenkov.leventbus.LeventBus
+import com.temnenkov.utils.myExecuteInTransaction
 import jetbrains.exodus.env.Environment
 import mu.KotlinLogging
 
@@ -23,14 +24,14 @@ class LeventLoopWorker(
                     val actor = actors[message.to] ?: deadActor
 
                     try {
-                        env.executeInTransaction { txn ->
+                        val result = env.myExecuteInTransaction { txn ->
                             actor.handleMessage(
                                 message,
                                 XodusStoreDb(env, txn),
                                 XodusQueueDb(env, txn)
                             )
                         }
-                        logger.info { "exec ok" }
+                        logger.info { "exec ok: $result" }
                     } catch (e: Throwable) {
                         logger.error(e) { "fail exec in transaction" }
                     }
