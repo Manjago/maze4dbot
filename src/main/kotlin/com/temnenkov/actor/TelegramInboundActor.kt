@@ -31,7 +31,9 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
                                 from = leventMessage.to,
                                 to = ActorAddress.ADAPTER_TELEGRAM_GAMEFACADE,
                                 payload = it.toJson()
-                            )
+                            ).also {
+                                logger.info { "sent to ${it.to} payload ${it.payload}" }
+                            }
                         )
                     }
                 }
