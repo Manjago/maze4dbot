@@ -22,12 +22,17 @@ class LeventLoopWorker(
                 if (message != null) {
                     val actor = actors[message.to] ?: deadActor
 
-                    env.executeInTransaction { txn ->
-                        actor.handleMessage(
-                            message,
-                            XodusStoreDb(env, txn),
-                            XodusQueueDb(env, txn)
-                        )
+                    try {
+                        env.executeInTransaction { txn ->
+                            actor.handleMessage(
+                                message,
+                                XodusStoreDb(env, txn),
+                                XodusQueueDb(env, txn)
+                            )
+                        }
+                        logger.info { "exec ok" }
+                    } catch (e: Throwable) {
+                        logger.error(e) { "fail exec in transaction" }
                     }
                     logger.info { "dump queue='${leventBus.dumpQueueToList()}' index='${leventBus.dumpIndexToList()}'" }
                 } else {
