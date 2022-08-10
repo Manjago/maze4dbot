@@ -12,7 +12,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 
-class TelegramInboundActor(private val telegramBot: TelegramBot, private val bus: XodusLeventBus) : LeventActor {
+class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
 
     private val worker = AtomicBoolean(false)
     private var offset = -1L
@@ -47,8 +47,6 @@ class TelegramInboundActor(private val telegramBot: TelegramBot, private val bus
                     ),
                     Instant.now().plusMillis(1000L)
                 )
-                logger.info { "queue " + bus.dumpQueueToList() }
-                logger.info { "index " + bus.dumpQueueToList() }
             } finally {
                 worker.set(false)
             }

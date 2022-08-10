@@ -39,7 +39,7 @@ fun main(args: Array<String>) {
         "bus-",
         bus,
         mapOf(
-            ActorAddress.TELEGRAM_INBOUND to TelegramInboundActor(telegramBot, bus),
+            ActorAddress.TELEGRAM_INBOUND to TelegramInboundActor(telegramBot),
             ActorAddress.GAMEFACADE to GameFacadeActor(),
             ActorAddress.TELEGRAM_OUTBOUND to TelegramOutboundActor(telegramBot),
             ActorAddress.ADAPTER_GAMEFACADE_TELEGRAM to AdapterGameFacadeTelegramActor(),
