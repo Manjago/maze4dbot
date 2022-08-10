@@ -22,7 +22,7 @@ class LeventLoopWorker(
                 if (message != null) {
                     val actor = actors[message.to] ?: deadActor
 
-                    val result = env.executeInTransaction { txn ->
+                    env.executeInTransaction { txn ->
                         val queueDb = XodusQueueDb(env, txn)
                         val toSave = actor.handleMessage(
                             message,
@@ -35,7 +35,6 @@ class LeventLoopWorker(
                             queueDb.push(leventMessage, due)
                         }
                     }
-                    logger.info { "exec ok: $result" }
                 } else {
                     Thread.sleep(loopStep)
                 }

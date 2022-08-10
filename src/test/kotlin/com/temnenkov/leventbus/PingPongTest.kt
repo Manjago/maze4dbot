@@ -50,8 +50,8 @@ internal class PingPongTest {
             val newIntValue = intValue - 1
             logger.info { "pong $id wanna send $newIntValue to $other" }
 
-            if (other != null) {
-                return listOf(
+            return if (other != null) {
+                listOf(
                     LeventMessage(
                         NanoIdUtils.randomNanoId(),
                         id,
@@ -61,7 +61,7 @@ internal class PingPongTest {
                     ) to Instant.now().plusMillis(200)
                 )
             } else {
-                return null
+                null
             }
         }
 
