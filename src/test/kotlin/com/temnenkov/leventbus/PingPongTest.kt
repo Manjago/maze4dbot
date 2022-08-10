@@ -52,7 +52,6 @@ internal class PingPongTest {
             val newIntValue = intValue - 1
             logger.info { "pong $id wanna send $newIntValue to $other" }
 
-            queueDb.done(leventMessage.id)
             if (other != null) {
                 queueDb.push(
                     message = LeventMessage(

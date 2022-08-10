@@ -44,7 +44,6 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
                 }
 
                 logger.info { "point 1" }
-                queueDb.done(leventMessage.id)
                 logger.info { "point 2" }
                 queueDb.push(
                     LeventMessage(

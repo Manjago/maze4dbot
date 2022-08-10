@@ -7,7 +7,6 @@ import mu.KotlinLogging
 
 class DeadActor : LeventActor {
     override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb) {
-        queueDb.done(leventMessage.id)
         logger.warn { "lost message $leventMessage" }
     }
 

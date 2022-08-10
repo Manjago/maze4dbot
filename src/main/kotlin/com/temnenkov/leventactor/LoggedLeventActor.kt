@@ -28,7 +28,6 @@ abstract class LoggedLeventActor : LeventActor {
                 }
             }
         }
-        queueDb.done(leventMessage.id)
         logger.info { "done message $leventMessage" }
     }
 

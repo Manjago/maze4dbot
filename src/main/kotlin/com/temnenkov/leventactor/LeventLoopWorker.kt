@@ -25,11 +25,13 @@ class LeventLoopWorker(
 
                     try {
                         val result = env.myExecuteInTransaction { txn ->
+                            val queueDb = XodusQueueDb(env, txn)
                             actor.handleMessage(
                                 message,
                                 XodusStoreDb(env, txn),
-                                XodusQueueDb(env, txn)
+                                queueDb
                             )
+                            queueDb.done(message.id)
                         }
                         logger.info { "exec ok: $result" }
                     } catch (e: Throwable) {
