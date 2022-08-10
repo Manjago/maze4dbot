@@ -4,12 +4,13 @@ import com.temnenkov.db.QueueDb
 import com.temnenkov.db.StoreDb
 import com.temnenkov.leventbus.LeventMessage
 import mu.KotlinLogging
+import java.time.Instant
 
 abstract class LoggedLeventActor : LeventActor {
 
     abstract fun handleMessage(from: String?, me: String, payload: String): OutMessage?
 
-    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb) {
+    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>> {
         logger.info { "got message $leventMessage" }
         if (leventMessage.payload != null) {
             val out = handleMessage(leventMessage.from, leventMessage.to, leventMessage.payload)
@@ -20,15 +21,13 @@ abstract class LoggedLeventActor : LeventActor {
                     payload = out.payload
                 )
                 logger.info { "wanna to send message $storedMessage" }
-                queueDb.push(storedMessage)
-                logger.info { "sent $storedMessage" }
-                val stored = queueDb.getMessageFromQueue(storedMessage.id)
-                if (stored == null) {
-                    logger.error { "NOT STORED $storedMessage !!!" }
-                }
+                return listOf(storedMessage to Instant.now())
+            } else {
+                return listOf()
             }
+        } else {
+            return listOf()
         }
-        logger.info { "done message $leventMessage" }
     }
 
     data class OutMessage(val to: String, val payload: String)

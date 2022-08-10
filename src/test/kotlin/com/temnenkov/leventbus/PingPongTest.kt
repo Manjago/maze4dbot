@@ -29,7 +29,7 @@ internal class PingPongTest {
 
     class PongActor(private val id: String) : LeventActor {
 
-        override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb) {
+        override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>> {
             val other = leventMessage.from
             val intValue = leventMessage.payload?.toInt() ?: 0
 
@@ -45,24 +45,24 @@ internal class PingPongTest {
 
             if (intValue <= 0) {
                 logger.info { "pong $id done with $intValue" }
-                queueDb.done(leventMessage.id)
-                return
+                return listOf()
             }
 
             val newIntValue = intValue - 1
             logger.info { "pong $id wanna send $newIntValue to $other" }
 
             if (other != null) {
-                queueDb.push(
-                    message = LeventMessage(
+                return listOf(
+                    LeventMessage(
                         NanoIdUtils.randomNanoId(),
                         id,
                         other,
                         (intValue - 1).toString(),
                         Duration.ofSeconds(5)
-                    ),
-                    due = Instant.now().plusMillis(200)
+                    ) to Instant.now().plusMillis(200)
                 )
+            } else {
+                return listOf()
             }
         }
 

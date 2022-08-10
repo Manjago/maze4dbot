@@ -16,7 +16,7 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
     private val worker = AtomicBoolean(false)
     private var offset = -1L
 
-    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb) {
+    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>> {
         if (!worker.compareAndExchange(false, true)) {
             try {
                 val updates = telegramBot.getUpdates(offset + 1)
@@ -45,22 +45,21 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
 
                 logger.info { "point 1" }
                 logger.info { "point 2" }
-                queueDb.push(
+                return listOf(
                     LeventMessage(
                         to = ActorAddress.TELEGRAM_INBOUND,
                         maxDuration = Duration.ofSeconds(TelegramBot.longPollingTimeout() + 10)
-                    ),
-                    Instant.now().plusMillis(1000L)
+                    ) to
+                        Instant.now().plusMillis(1000L)
                 )
-                logger.info { "point 3" }
             } finally {
                 logger.info { "point 4" }
                 worker.set(false)
                 logger.info { "point 5" }
             }
         } else {
-            queueDb.done(leventMessage.id)
             logger.info { "$leventMessage drop" }
+            return listOf()
         }
     }
 
