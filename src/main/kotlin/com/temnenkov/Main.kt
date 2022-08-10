@@ -1,6 +1,7 @@
 package com.temnenkov
 
 import com.temnenkov.actor.ActorAddress
+import com.temnenkov.actor.TelegramInboundActor
 import com.temnenkov.levent.LeventProperties
 import com.temnenkov.leventactor.DeadActor
 import com.temnenkov.leventactor.leventLoop
@@ -27,11 +28,15 @@ fun main(args: Array<String>) {
 
     val bus = XodusLeventBus(environment)
 
+    val telegramBot = TelegramBot()
+
     leventLoop(
         3,
         "bus-",
         bus,
-        mapOf(),
+        mapOf(
+            ActorAddress.TELEGRAM_INBOUND to TelegramInboundActor(telegramBot)
+        ),
         environment,
         loopStep,
         DeadActor()
