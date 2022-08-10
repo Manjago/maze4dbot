@@ -1,6 +1,7 @@
 package com.temnenkov.db
 
 import com.temnenkov.leventbus.LeventMessage
+import com.temnenkov.leventbus.toLeventMessage
 import com.temnenkov.utils.openIndexStore
 import com.temnenkov.utils.openQueueStore
 import com.temnenkov.utils.toEntry
@@ -32,6 +33,11 @@ class XodusQueueDb(
         ) {
             logger.error { "fail put index ${message.id} with due $due" }
         }
+    }
+
+    override fun getMessageFromQueue(id: String): LeventMessage? {
+        val raw = env.openQueueStore(txn).get(txn, id.toEntry())
+        return raw?.bytesUnsafe?.toLeventMessage()
     }
 
     override fun done(messageId: String): Boolean = env.openQueueStore(txn).delete(txn, messageId.toEntry())

@@ -14,7 +14,8 @@ fun createEnvironment(appendProperties: Properties? = null): Pair<Environment, L
     val loopStep = properties.getProperty(LeventProperties.LB_LOOP_STEP, "100").toLong()
 
     return Environments
-        .newInstance(properties.getProperty(LeventProperties.LB_DATABASE, "~/.leventbusData"),
-        EnvironmentConfig().setLogDurableWrite(true)
+        .newInstance(
+            properties.getProperty(LeventProperties.LB_DATABASE, "~/.leventbusData"),
+            EnvironmentConfig().setLogDurableWrite(true)
         ) to loopStep
 }

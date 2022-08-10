@@ -26,15 +26,18 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
                     logger.info { "set new offset = $offset" }
 
                     updates.forEach {
-                        queueDb.push(
-                            LeventMessage(
-                                from = leventMessage.to,
-                                to = ActorAddress.ADAPTER_TELEGRAM_GAMEFACADE,
-                                payload = it.toJson()
-                            ).also {
-                                logger.info { "sent to ${it.to} payload ${it.payload}" }
-                            }
+                        val outMessage = LeventMessage(
+                            from = leventMessage.to,
+                            to = ActorAddress.ADAPTER_TELEGRAM_GAMEFACADE,
+                            payload = it.toJson()
                         )
+                        logger.info { "wanna to send to ${outMessage.to} payload ${outMessage.payload}" }
+                        queueDb.push(outMessage)
+                        logger.info { "sent ${outMessage.id} to ${outMessage.to} payload ${outMessage.payload}" }
+                        val stored = queueDb.getMessageFromQueue(outMessage.id)
+                        if (stored == null) {
+                            logger.error { "NOT STORED $outMessage !!!" }
+                        }
                     }
                 }
 

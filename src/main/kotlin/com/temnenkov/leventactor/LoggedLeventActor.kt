@@ -14,15 +14,18 @@ abstract class LoggedLeventActor : LeventActor {
         if (leventMessage.payload != null) {
             val out = handleMessage(leventMessage.from, leventMessage.to, leventMessage.payload)
             if (out != null) {
-                queueDb.push(
-                    LeventMessage(
-                        from = leventMessage.to,
-                        to = out.to,
-                        payload = out.payload
-                    ).also {
-                        logger.info { "sent message $it" }
-                    }
+                val storedMessage = LeventMessage(
+                    from = leventMessage.to,
+                    to = out.to,
+                    payload = out.payload
                 )
+                logger.info { "wanna to send message $storedMessage" }
+                queueDb.push(storedMessage)
+                logger.info { "sent $storedMessage" }
+                val stored = queueDb.getMessageFromQueue(storedMessage.id)
+                if (stored == null) {
+                    logger.error { "NOT STORED $storedMessage !!!" }
+                }
             }
         }
         queueDb.done(leventMessage.id)
