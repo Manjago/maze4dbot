@@ -10,7 +10,7 @@ abstract class LoggedLeventActor : LeventActor {
 
     abstract fun handleMessage(from: String?, me: String, payload: String): OutMessage?
 
-    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>> {
+    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>>? {
         logger.info { "got message $leventMessage" }
         if (leventMessage.payload != null) {
             val out = handleMessage(leventMessage.from, leventMessage.to, leventMessage.payload)
@@ -23,10 +23,10 @@ abstract class LoggedLeventActor : LeventActor {
                 logger.info { "wanna to send message $storedMessage" }
                 return listOf(storedMessage to Instant.now())
             } else {
-                return listOf()
+                return null
             }
         } else {
-            return listOf()
+            return null
         }
     }
 

@@ -16,7 +16,7 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
     private val worker = AtomicBoolean(false)
     private var offset = -1L
 
-    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>> {
+    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>>? {
         if (!worker.compareAndExchange(false, true)) {
             try {
                 val updates = telegramBot.getUpdates(offset + 1)
@@ -59,7 +59,7 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
             }
         } else {
             logger.info { "$leventMessage drop" }
-            return listOf()
+            return null
         }
     }
 

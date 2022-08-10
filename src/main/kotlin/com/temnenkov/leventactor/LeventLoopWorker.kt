@@ -32,7 +32,7 @@ class LeventLoopWorker(
                                 queueDb
                             )
                             queueDb.done(message.id)
-                            toSave.forEach {
+                            toSave?.forEach {
                                 val (leventMessage, due) = it
                                 queueDb.push(leventMessage, due)
                             }

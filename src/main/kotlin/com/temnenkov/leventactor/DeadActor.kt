@@ -7,9 +7,9 @@ import mu.KotlinLogging
 import java.time.Instant
 
 class DeadActor : LeventActor {
-    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>> {
+    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>>? {
         logger.warn { "lost message $leventMessage" }
-        return listOf()
+        return null
     }
 
     companion object {
