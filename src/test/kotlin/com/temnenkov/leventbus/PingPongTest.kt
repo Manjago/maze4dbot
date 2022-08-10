@@ -31,7 +31,7 @@ internal class PingPongTest {
 
         override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>>? {
             val other = leventMessage.from
-            val intValue = leventMessage.payload?.toInt() ?: 0
+            val intValue = leventMessage.payload.toInt()
 
             logger.info { "pong $id got $intValue from $other" }
 

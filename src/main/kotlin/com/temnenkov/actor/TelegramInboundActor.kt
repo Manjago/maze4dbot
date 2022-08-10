@@ -46,10 +46,7 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
                 logger.info { "point 1" }
                 logger.info { "point 2" }
                 return listOf(
-                    LeventMessage(
-                        to = ActorAddress.TELEGRAM_INBOUND,
-                        maxDuration = Duration.ofSeconds(TelegramBot.longPollingTimeout() + 10)
-                    ) to
+                    myMessage() to
                         Instant.now().plusMillis(1000L)
                 )
             } finally {
@@ -65,5 +62,10 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
 
     companion object {
         private val logger = KotlinLogging.logger { }
+        fun myMessage() = LeventMessage(
+            to = ActorAddress.TELEGRAM_INBOUND,
+            maxDuration = Duration.ofSeconds(TelegramBot.longPollingTimeout() + 10),
+            payload = "{}"
+        )
     }
 }

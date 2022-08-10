@@ -12,21 +12,17 @@ abstract class LoggedLeventActor : LeventActor {
 
     override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb, queueDb: QueueDb): List<Pair<LeventMessage, Instant>>? {
         logger.info { "got message $leventMessage" }
-        if (leventMessage.payload != null) {
-            val out = handleMessage(leventMessage.from, leventMessage.to, leventMessage.payload)
-            if (out != null) {
-                val storedMessage = LeventMessage(
-                    from = leventMessage.to,
-                    to = out.to,
-                    payload = out.payload
-                )
-                logger.info { "wanna to send message $storedMessage" }
-                return listOf(storedMessage to Instant.now())
-            } else {
-                return null
-            }
+        val out = handleMessage(leventMessage.from, leventMessage.to, leventMessage.payload)
+        return if (out != null) {
+            val storedMessage = LeventMessage(
+                from = leventMessage.to,
+                to = out.to,
+                payload = out.payload
+            )
+            logger.info { "wanna to send message $storedMessage" }
+            listOf(storedMessage to Instant.now())
         } else {
-            return null
+            null
         }
     }
 
