@@ -6,6 +6,7 @@ import com.temnenkov.utils.openQueueStore
 import com.temnenkov.utils.toEntry
 import jetbrains.exodus.env.Environment
 import jetbrains.exodus.env.Transaction
+import mu.KotlinLogging
 import java.time.Instant
 
 class XodusQueueDb(
@@ -14,18 +15,28 @@ class XodusQueueDb(
 ) : QueueDb {
 
     override fun push(message: LeventMessage, due: Instant) {
-        env.openQueueStore(txn).put(
-            txn,
-            message.id.toEntry(),
-            message.toEntry()
-        )
+        if (!env.openQueueStore(txn).put(
+                txn,
+                message.id.toEntry(),
+                message.toEntry()
+            )
+        ) {
+            logger.error { "fail put message $message with ${message.id}" }
+        }
 
-        env.openIndexStore(txn).put(
-            txn,
-            due.toEntry(),
-            message.id.toEntry()
-        )
+        if (!env.openIndexStore(txn).put(
+                txn,
+                due.toEntry(),
+                message.id.toEntry()
+            )
+        ) {
+            logger.error { "fail put index ${message.id} with due $due" }
+        }
     }
 
     override fun done(messageId: String): Boolean = env.openQueueStore(txn).delete(txn, messageId.toEntry())
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
+    }
 }
