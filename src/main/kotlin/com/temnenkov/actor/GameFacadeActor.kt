@@ -11,10 +11,11 @@ class GameFacadeActor : LoggedLeventActor() {
             ActorAddress.ADAPTER_GAMEFACADE_TELEGRAM,
             AdapterGameFacadeTelegramActor.AdapterGameFacadeTelegramMessage(
                 message.from,
-                "Пока не могу обработать '${message.message}'"
+                "Пока не могу обработать '${message.message}'",
+                message.messageId
             ).toJson()
         )
     }
 
-    data class GameFacadeInboundMessage(val from: String, val message: String)
+    data class GameFacadeInboundMessage(val from: String, val message: String, val messageId: Long)
 }
