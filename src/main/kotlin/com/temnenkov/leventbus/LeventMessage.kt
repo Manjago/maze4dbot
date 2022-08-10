@@ -9,5 +9,5 @@ data class LeventMessage(
     val from: String? = null,
     val to: String,
     val payload: String? = null,
-    val maxDuration: Duration
+    val maxDuration: Duration = Duration.ofSeconds(30)
 ) : Serializable

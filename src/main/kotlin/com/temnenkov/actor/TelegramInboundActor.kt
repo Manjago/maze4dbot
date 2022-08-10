@@ -5,6 +5,7 @@ import com.temnenkov.db.StoreDb
 import com.temnenkov.leventactor.LeventActor
 import com.temnenkov.leventbus.LeventMessage
 import com.temnenkov.telegram.TelegramBot
+import com.temnenkov.utils.toJson
 import mu.KotlinLogging
 import java.time.Duration
 import java.time.Instant
@@ -23,7 +24,18 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
                 if (updates.isNotEmpty()) {
                     offset = updates.maxBy { it.updateId }.updateId
                     logger.info { "set new offset = $offset" }
+
+                    updates.forEach {
+                        queueDb.push(
+                            LeventMessage(
+                                from = leventMessage.to,
+                                to = ActorAddress.ADAPTER_TELEGRAM_GAMEFACADE,
+                                payload = it.toJson()
+                            )
+                        )
+                    }
                 }
+
                 queueDb.done(leventMessage.id)
                 queueDb.push(
                     LeventMessage(

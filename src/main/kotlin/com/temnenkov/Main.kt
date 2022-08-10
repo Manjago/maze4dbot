@@ -1,7 +1,11 @@
 package com.temnenkov
 
 import com.temnenkov.actor.ActorAddress
+import com.temnenkov.actor.AdapterGameFacadeTelegramActor
+import com.temnenkov.actor.AdapterTelegramGameFacadeActor
+import com.temnenkov.actor.GameFacadeActor
 import com.temnenkov.actor.TelegramInboundActor
+import com.temnenkov.actor.TelegramOutboundActor
 import com.temnenkov.levent.LeventProperties
 import com.temnenkov.leventactor.DeadActor
 import com.temnenkov.leventactor.leventLoop
@@ -35,7 +39,11 @@ fun main(args: Array<String>) {
         "bus-",
         bus,
         mapOf(
-            ActorAddress.TELEGRAM_INBOUND to TelegramInboundActor(telegramBot)
+            ActorAddress.TELEGRAM_INBOUND to TelegramInboundActor(telegramBot),
+            ActorAddress.GAMEFACADE to GameFacadeActor(),
+            ActorAddress.TELEGRAM_OUTBOUND to TelegramOutboundActor(telegramBot),
+            ActorAddress.ADAPTER_GAMEFACADE_TELEGRAM to AdapterGameFacadeTelegramActor(),
+            ActorAddress.ADAPTER_TELEGRAM_GAMEFACADE to AdapterTelegramGameFacadeActor()
         ),
         environment,
         loopStep,

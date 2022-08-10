@@ -47,11 +47,20 @@ class TelegramBot {
         }
     }
 
-    fun sendReplyMessage(to: Long, replyToMessageId: Long, text: String): SendMesageResponse? {
+    fun sendReplyMessage(to: Long, replyToMessageId: Long, text: String): SendMessageResponse? =
+        internalSendMessage(to, replyToMessageId, text)
+
+    fun sendMessage(to: Long, text: String): SendMessageResponse? =
+        internalSendMessage(to, null, text)
+
+    private fun internalSendMessage(to: Long, replyToMessageId: Long?, text: String): SendMessageResponse? =
+        sendMessage(SendMessageRequest(to, text, replyToMessageId))
+
+    fun sendMessage(request: SendMessageRequest): SendMessageResponse? {
         val requestBuilder = HttpRequest.newBuilder(URI.create("https://api.telegram.org/${token()}/sendMessage"))
             .header("Content-Type", "application/json")
             .timeout(Duration.ofSeconds(System.getProperty(TG_HTTP_CLIENT_TIMEOUT, "5").toLong()))
-            .POST(HttpRequest.BodyPublishers.ofString(SendMessageRequest(to, text, replyToMessageId).toJson()))
+            .POST(HttpRequest.BodyPublishers.ofString(request.toJson()))
 
         val httpResponse = httpClient.send(
             requestBuilder.build(),
@@ -63,7 +72,7 @@ class TelegramBot {
             null
         } else {
             logger.info { "got telegram response ${httpResponse.body()}" }
-            return httpResponse.body().fromJson(SendMesageResponse::class.java)
+            return httpResponse.body().fromJson(SendMessageResponse::class.java)
         }
     }
 
@@ -87,7 +96,7 @@ class TelegramBot {
         val result: List<Update> = listOf()
     )
 
-    data class SendMesageResponse(
+    data class SendMessageResponse(
         val ok: Boolean? = null,
         val result: Message? = null
     )
