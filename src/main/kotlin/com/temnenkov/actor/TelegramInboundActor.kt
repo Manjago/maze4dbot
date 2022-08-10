@@ -36,6 +36,7 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
                 worker.set(false)
             }
         } else {
+            queueDb.done(leventMessage.id)
             logger.info { "$leventMessage drop" }
         }
     }
