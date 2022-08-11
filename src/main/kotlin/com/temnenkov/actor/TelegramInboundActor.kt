@@ -1,55 +1,43 @@
 package com.temnenkov.actor
 
 import com.temnenkov.db.StoreDb
-import com.temnenkov.leventactor.LeventActor
+import com.temnenkov.leventactor.BaseBlockedLeventActor
 import com.temnenkov.leventbus.LeventMessage
 import com.temnenkov.telegram.TelegramBot
 import com.temnenkov.utils.toJson
 import mu.KotlinLogging
 import java.time.Duration
 import java.time.Instant
-import java.util.concurrent.atomic.AtomicBoolean
 
-class TelegramInboundActor(private val telegramBot: TelegramBot) : LeventActor {
+class TelegramInboundActor(private val telegramBot: TelegramBot) : BaseBlockedLeventActor() {
 
-    private val worker = AtomicBoolean(false)
+    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb): List<Pair<LeventMessage, Instant>> {
+        val offset = (storeDb.get("TelegramInboundActor", "offset") ?: "-1").toLong()
 
-    override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb): List<Pair<LeventMessage, Instant>>? {
-        if (!worker.compareAndExchange(false, true)) {
-            try {
-                val offset = (storeDb.get("TelegramInboundActor", "offset") ?: "-1").toLong()
+        val updates = telegramBot.getUpdates(offset + 1)
+        logger.info { "get updates $updates" }
+        val result = mutableListOf<Pair<LeventMessage, Instant>>()
+        if (updates.isNotEmpty()) {
+            val newOffset = updates.maxBy { it.updateId }.updateId
+            logger.info { "set new offset = $newOffset" }
+            storeDb.put("TelegramInboundActor", "offset", newOffset.toString())
 
-                val updates = telegramBot.getUpdates(offset + 1)
-                logger.info { "get updates $updates" }
-                val result = mutableListOf<Pair<LeventMessage, Instant>>()
-                if (updates.isNotEmpty()) {
-                    val newOffset = updates.maxBy { it.updateId }.updateId
-                    logger.info { "set new offset = $newOffset" }
-                    storeDb.put("TelegramInboundActor", "offset", newOffset.toString())
-
-                    updates.forEach {
-                        val outMessage = LeventMessage(
-                            from = leventMessage.to,
-                            to = ActorAddress.ADAPTER_TELEGRAM_GAMEFACADE,
-                            payload = it.toJson()
-                        )
-                        logger.info { "wanna to send to ${outMessage.to} payload ${outMessage.payload}" }
-                        result.add(outMessage to Instant.now())
-                    }
-                }
-                result.add(
-                    myMessage() to
-                        Instant.now().plusMillis(1000L)
+            updates.forEach {
+                val outMessage = LeventMessage(
+                    from = leventMessage.to,
+                    to = ActorAddress.ADAPTER_TELEGRAM_GAMEFACADE,
+                    payload = it.toJson()
                 )
-
-                return result.toList()
-            } finally {
-                worker.set(false)
+                logger.info { "wanna to send to ${outMessage.to} payload ${outMessage.payload}" }
+                result.add(outMessage to Instant.now())
             }
-        } else {
-            logger.info { "$leventMessage drop" }
-            return null
         }
+        result.add(
+            myMessage() to
+                Instant.now().plusMillis(1000L)
+        )
+
+        return result.toList()
     }
 
     companion object {

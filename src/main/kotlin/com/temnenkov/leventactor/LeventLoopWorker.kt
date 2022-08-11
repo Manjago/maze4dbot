@@ -3,6 +3,7 @@ package com.temnenkov.leventactor
 import com.temnenkov.db.XodusQueueDb
 import com.temnenkov.db.XodusStoreDb
 import com.temnenkov.leventbus.LeventBus
+import com.temnenkov.leventbus.LeventMessage
 import jetbrains.exodus.env.Environment
 import mu.KotlinLogging
 
@@ -22,18 +23,10 @@ class LeventLoopWorker(
                 if (message != null) {
                     val actor = actors[message.to] ?: deadActor
 
-                    env.executeInTransaction { txn ->
-                        val queueDb = XodusQueueDb(env, txn)
-                        val toSave = actor.handleMessage(
-                            message,
-                            XodusStoreDb(env, txn)
-                        )
-                        queueDb.done(message.id)
-                        logger.info { "done $message" }
-                        toSave?.forEach {
-                            val (leventMessage, due) = it
-                            queueDb.push(leventMessage, due)
-                        }
+                    if (actor is BlockedLeventActor) {
+                        processMessageByBlockedActor(actor, message)
+                    } else {
+                        processMessage(actor, message)
                     }
                 } else {
                     Thread.sleep(loopStep)
@@ -44,6 +37,37 @@ class LeventLoopWorker(
             } catch (ex: Exception) {
                 logger.error(ex) { "Exception happens on $workerId, ignored" }
             }
+        }
+    }
+
+    private fun processMessageByBlockedActor(
+        actor: BlockedLeventActor,
+        message: LeventMessage
+    ) = if (actor.tryEntryLock()) {
+        try {
+            processMessage(actor, message)
+        } finally {
+            actor.releaseLock()
+        }
+    } else {
+        env.executeInTransaction { txn ->
+            val queueDb = XodusQueueDb(env, txn)
+            queueDb.done(message.id)
+        }
+        logger.info { "$message drop" }
+    }
+
+    private fun processMessage(actor: LeventActor, message: LeventMessage) = env.executeInTransaction { txn ->
+        val queueDb = XodusQueueDb(env, txn)
+        val toSave = actor.handleMessage(
+            message,
+            XodusStoreDb(env, txn)
+        )
+        queueDb.done(message.id)
+        logger.info { "done $message" }
+        toSave?.forEach {
+            val (leventMessage, due) = it
+            queueDb.push(leventMessage, due)
         }
     }
 
