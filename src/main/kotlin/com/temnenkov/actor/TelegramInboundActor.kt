@@ -14,27 +14,25 @@ class TelegramInboundActor(private val telegramBot: TelegramBot) : BaseBlockedLe
     override fun handleMessage(leventMessage: LeventMessage, storeDb: StoreDb): List<Pair<LeventMessage, Instant>> {
         val offset = (storeDb.get("TelegramInboundActor", "offset") ?: "-1").toLong()
 
-        val updates = telegramBot.getUpdates(offset + 1)
+        val (updates, maxOffset) = telegramBot.getUpdates(offset + 1)
+        if (maxOffset != null) {
+            logger.info { "set new offset = $maxOffset" }
+            storeDb.put("TelegramInboundActor", "offset", maxOffset.toString())
+        }
+
         logger.info { "get updates $updates" }
         val result = mutableListOf<Pair<LeventMessage, Instant>>()
-        if (updates.isNotEmpty()) {
-            val newOffset = updates.maxBy { it.updateId }.updateId
-            logger.info { "set new offset = $newOffset" }
-            storeDb.put("TelegramInboundActor", "offset", newOffset.toString())
-
-            updates.forEach {
-                val outMessage = LeventMessage(
-                    from = leventMessage.to,
-                    to = ActorAddress.ADAPTER_TELEGRAM_GAMEFACADE,
-                    payload = it.toJson()
-                )
-                logger.info { "wanna to send to ${outMessage.to} payload ${outMessage.payload}" }
-                result.add(outMessage to Instant.now())
-            }
+        updates.forEach {
+            val outMessage = LeventMessage(
+                from = leventMessage.to,
+                to = ActorAddress.ADAPTER_TELEGRAM_GAMEFACADE,
+                payload = it.toJson()
+            )
+            logger.info { "wanna to send to ${outMessage.to} payload ${outMessage.payload}" }
+            result.add(outMessage to Instant.now())
         }
         result.add(
-            myMessage() to
-                Instant.now().plusMillis(1000L)
+            myMessage() to Instant.now().plusMillis(1000L)
         )
 
         return result.toList()

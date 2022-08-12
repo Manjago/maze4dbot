@@ -18,32 +18,29 @@ class TelegramBot {
 
     private val httpClient: HttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(System.getProperty(TG_HTTP_CLIENT_CONNECT_TIMEOUT, "5").toLong()))
-        .version(HttpClient.Version.HTTP_1_1)
-        .build()
+        .version(HttpClient.Version.HTTP_1_1).build()
 
-    fun getUpdates(offset: Long): List<IncomingMessage> {
+    fun getUpdates(offset: Long): Pair<List<IncomingMessage>, Long?> {
         val requestBuilder = HttpRequest.newBuilder(URI.create("https://api.telegram.org/${token()}/getUpdates"))
-            .header("Content-Type", "application/json")
-            .timeout(Duration.ofSeconds(longPollingTimeout() + 1))
+            .header("Content-Type", "application/json").timeout(Duration.ofSeconds(longPollingTimeout() + 1))
             .POST(HttpRequest.BodyPublishers.ofString(GetUpdatestRequest(offset).toJson()))
 
         val httpResponse = httpClient.send(
-            requestBuilder
-                .build(),
+            requestBuilder.build(),
             HttpResponse.BodyHandlers.ofString()
         )
 
-        return if (httpResponse.statusCode() != 200) {
-            logger.error { "bad status code ${httpResponse.statusCode()} text ${httpResponse.body()}" }
-            listOf()
-        } else {
+        return if (httpResponse.statusCode() == 200) {
             logger.info { "got telegram response ${httpResponse.body()}" }
             val response = httpResponse.body().fromJson(GetUpdatesResponse::class.java)
             response.result.asSequence().filter {
                 it.message?.from != null && it.message.text != null
             }.map {
                 IncomingMessage(it.message!!.messageId, it.message.from!!.id, it.updateId, it.message.text!!)
-            }.toList()
+            }.toList() to response.maxOffset()
+        } else {
+            logger.error { "bad status code ${httpResponse.statusCode()} text ${httpResponse.body()}" }
+            listOf<IncomingMessage>() to null
         }
     }
 
@@ -70,11 +67,9 @@ class TelegramBot {
     private fun token() = System.getProperty(TG_BOT_TOKEN)
 
     data class SendMessageRequest(
-        @SerializedName("chat_id")
-        val chatId: Long,
+        @SerializedName("chat_id") val chatId: Long,
         val text: String,
-        @SerializedName("reply_to_message_id")
-        val replyToMessageId: Long? = null
+        @SerializedName("reply_to_message_id") val replyToMessageId: Long? = null
     )
 
     data class GetUpdatestRequest(
@@ -85,7 +80,13 @@ class TelegramBot {
     data class GetUpdatesResponse(
         val ok: Boolean? = null,
         val result: List<Update> = listOf()
-    )
+    ) {
+        fun maxOffset() = if (result.isEmpty()) {
+            null
+        } else {
+            result.maxBy { it.updateId }.updateId
+        }
+    }
 
     data class SendMessageResponse(
         val ok: Boolean? = null,
@@ -93,16 +94,14 @@ class TelegramBot {
     )
 
     data class Update(
-        @SerializedName("update_id")
-        val updateId: Long,
+        @SerializedName("update_id") val updateId: Long,
         val message: Message? = null
     )
 
     data class IncomingMessage(val messageId: Long, val from: Long, val updateId: Long, val text: String)
 
     data class Message(
-        @SerializedName("message_id")
-        val messageId: Long,
+        @SerializedName("message_id") val messageId: Long,
         val from: User? = null,
         val text: String? = null
     )
