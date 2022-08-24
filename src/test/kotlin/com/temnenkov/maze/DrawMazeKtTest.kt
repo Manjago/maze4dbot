@@ -7,7 +7,6 @@ internal class DrawMazeKtTest {
     @Test
     fun noPasses() {
         val maze: Maze2D = Maze2DImpl(6, 5)
-        val display = drawMaze(maze)
         assertEquals(
             """+-+-+-+-+-+-+
 | | | | | | |
@@ -21,7 +20,25 @@ internal class DrawMazeKtTest {
 | | | | | | |
 +-+-+-+-+-+-+
 """,
-            display
+            drawMaze(maze)
+        )
+    }
+
+    @Test
+    internal fun twoPasses() {
+        val maze: Maze2D = Maze2DImpl(3, 3)
+        maze.linkToNorth(0, 0)
+        maze.linkToEast(0, 1)
+        assertEquals(
+            """+-+-+-+
+| | | |
++-+-+-+
+|   | |
++ +-+-+
+| | | |
++-+-+-+
+""",
+            drawMaze(maze)
         )
     }
 }
