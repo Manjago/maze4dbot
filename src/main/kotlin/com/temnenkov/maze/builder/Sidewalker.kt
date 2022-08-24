@@ -1,11 +1,11 @@
 package com.temnenkov.maze.builder
 
-import com.temnenkov.maze.Maze2D
+import com.temnenkov.maze.MutableMaze2D
 import kotlin.random.Random
 
 class Sidewalker(private val random: Random) {
 
-    fun build(maze: Maze2D) {
+    fun build(maze: MutableMaze2D) {
         for (x in 0 until maze.width) {
             for (y in 0 until maze.heigth) {
                 when {

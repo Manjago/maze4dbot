@@ -4,7 +4,7 @@ import java.lang.IllegalArgumentException
 import kotlin.experimental.and
 import kotlin.experimental.or
 
-class Maze2DImpl(override val width: Int, override val heigth: Int) : Maze2D {
+class MutableMaze2DImpl(override val width: Int, override val heigth: Int) : MutableMaze2D {
 
     private val data = Array(heigth) { ByteArray(width) }
 

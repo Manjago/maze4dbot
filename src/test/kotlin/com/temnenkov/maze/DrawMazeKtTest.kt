@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 internal class DrawMazeKtTest {
     @Test
     fun noPasses() {
-        val maze: Maze2D = Maze2DImpl(6, 5)
+        val maze: MutableMaze2D = MutableMaze2DImpl(6, 5)
         assertEquals(
             """+-+-+-+-+-+-+
 | | | | | | |
@@ -26,7 +26,7 @@ internal class DrawMazeKtTest {
 
     @Test
     internal fun twoPasses() {
-        val maze: Maze2D = Maze2DImpl(3, 3)
+        val maze: MutableMaze2D = MutableMaze2DImpl(3, 3)
         maze.linkToNorth(0, 0)
         maze.linkToEast(0, 1)
         assertEquals(
